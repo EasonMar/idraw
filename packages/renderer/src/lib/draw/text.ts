@@ -38,10 +38,16 @@ export function drawText(
     const fontHeight = desc.lineHeight || desc.fontSize;
     const descTextList = descText.split('\n');
     const lines: {text: string, width: number}[] = [];
-
-    descTextList.forEach((tempText) => {
+    
+    let lineNum = 0;
+    descTextList.forEach((tempText,idx) => {
       let lineText = '';
-      let lineNum = 0;
+
+      // 让其运行下面的逻辑
+      if (!tempText) {
+        tempText = ' '
+      }
+
       for (let i = 0; i < tempText.length; i++) {
         if (ctx.measureText(lineText + (tempText[i] || '')).width < ctx.calcDeviceNum(elem.w)) {
           lineText += (tempText[i] || '');
@@ -57,11 +63,15 @@ export function drawText(
           break;
         }
         if (lineText && tempText.length - 1 === i) {
-          if ((lineNum + 1) * fontHeight < elem.h) {
+          if ((lineNum + 1) * fontHeight <= elem.h) {
             lines.push({
               text: lineText,
               width: ctx.calcScreenNum(ctx.measureText(lineText).width),
             });
+            // 不是最后一段...这里 lineNum 也要加一...解决存在换行场景时超出换行的异常
+            if(idx < descTextList.length - 1){
+              lineNum ++;
+            }
             break;
           }
         }
