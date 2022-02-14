@@ -39,44 +39,57 @@ export function drawText(
     const descTextList = descText.split('\n');
     const lines: {text: string, width: number}[] = [];
     
-    let lineNum = 0;
-    descTextList.forEach((tempText,idx) => {
-      let lineText = '';
+    // 如果配置了maxWidth, 肯定只有一行内容...
+    if (desc.maxWidth) {
+      const lineText = descTextList.join('');
 
-      // 让其运行下面的逻辑
-      if (!tempText) {
-        tempText = ' '
+      if (fontHeight <= elem.h) {
+        lines.push({
+          text: lineText,
+          width: ctx.calcScreenNum(ctx.measureText(lineText).width)
+        })
       }
-
-      for (let i = 0; i < tempText.length; i++) {
-        if (ctx.measureText(lineText + (tempText[i] || '')).width < ctx.calcDeviceNum(elem.w)) {
-          lineText += (tempText[i] || '');
-        } else {
-          lines.push({
-            text: lineText,
-            width: ctx.calcScreenNum(ctx.measureText(lineText).width),
-          });
-          lineText = (tempText[i] || '');
-          lineNum ++;
+    } else {
+      let lineNum = 0;
+      descTextList.forEach((tempText,idx) => {
+        let lineText = '';
+  
+        // 让其运行下面的逻辑
+        if (!tempText) {
+          tempText = ' '
         }
-        if ((lineNum + 1) * fontHeight > elem.h) {
-          break;
-        }
-        if (lineText && tempText.length - 1 === i) {
-          if ((lineNum + 1) * fontHeight <= elem.h) {
+  
+        for (let i = 0; i < tempText.length; i++) {
+          if (ctx.measureText(lineText + (tempText[i] || '')).width < ctx.calcDeviceNum(elem.w)) {
+            lineText += (tempText[i] || '');
+          } else {
             lines.push({
               text: lineText,
               width: ctx.calcScreenNum(ctx.measureText(lineText).width),
             });
-            // 不是最后一段...这里 lineNum 也要加一...解决存在换行场景时超出换行的异常
-            if(idx < descTextList.length - 1){
-              lineNum ++;
-            }
+            lineText = (tempText[i] || '');
+            lineNum ++;
+          }
+          if ((lineNum + 1) * fontHeight > elem.h) {
             break;
           }
+          if (lineText && tempText.length - 1 === i) {
+            if ((lineNum + 1) * fontHeight <= elem.h) {
+              lines.push({
+                text: lineText,
+                width: ctx.calcScreenNum(ctx.measureText(lineText).width),
+              });
+              // 不是最后一段...这里 lineNum 也要加一...解决存在换行场景时超出换行的异常
+              if(idx < descTextList.length - 1){
+                lineNum ++;
+              }
+              break;
+            }
+          }
         }
-      }
-    });
+      });
+    }
+    
 
     // draw text lines
     {
@@ -98,12 +111,14 @@ export function drawText(
       }
       lines.forEach((line, i) => {
         let _x = elem.x;
-        if (desc.textAlign === 'center') {
+        // 配置了maxWidth 且 文本长度 > maxWidth，则文本要缩小
+        const shoudScaleText = desc.maxWidth && elem.w < line.width;
+        if (desc.textAlign === 'center' && !shoudScaleText) {
           _x = elem.x + (elem.w - line.width) / 2;
-        } else if (desc.textAlign === 'right') {
+        } else if (desc.textAlign === 'right' && !shoudScaleText) {
           _x = elem.x + (elem.w - line.width);
         }
-        ctx.fillText(line.text, _x, _y + fontHeight * i);
+        ctx.fillText(line.text, _x, _y + fontHeight * i, desc.maxWidth ? elem.w : undefined);
       });
       clearContext(ctx);
     }

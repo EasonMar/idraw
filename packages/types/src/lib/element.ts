@@ -79,6 +79,7 @@ type TypeElemDescText = {
   textShadowOffsetX?: number;
   textShadowOffsetY?: number;
   textShadowBlur?: number;
+  maxWidth?: boolean;
 } & TypeElemBoxDesc
 
 type TypeElemDescCircle = {
