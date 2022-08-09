@@ -1,6 +1,6 @@
 import {
-  TypeContext, 
-  TypeElemDescText, 
+  TypeContext,
+  TypeElemDescText,
   TypeElement,
 } from '@idraw/types';
 import util from '@idraw/util';
@@ -37,8 +37,8 @@ export function drawText(
     const descText = desc.text.replace(/\r\n/ig, '\n');
     const fontHeight = desc.lineHeight || desc.fontSize;
     const descTextList = descText.split('\n');
-    const lines: {text: string, width: number}[] = [];
-    
+    const lines: { text: string, width: number }[] = [];
+
     // 如果配置了maxWidth, 肯定只有一行内容...
     if (desc.maxWidth) {
       const lineText = descTextList.join('');
@@ -47,18 +47,18 @@ export function drawText(
         lines.push({
           text: lineText,
           width: ctx.calcScreenNum(ctx.measureText(lineText).width)
-        })
+        });
       }
     } else {
       let lineNum = 0;
-      descTextList.forEach((tempText,idx) => {
+      descTextList.forEach((tempText, idx) => {
         let lineText = '';
-  
-        // 让其运行下面的逻辑
+
+        // 使空白行可以继续运行后面的逻辑
         if (!tempText) {
           tempText = ' '
         }
-  
+
         for (let i = 0; i < tempText.length; i++) {
           if (ctx.measureText(lineText + (tempText[i] || '')).width < ctx.calcDeviceNum(elem.w)) {
             lineText += (tempText[i] || '');
@@ -68,7 +68,7 @@ export function drawText(
               width: ctx.calcScreenNum(ctx.measureText(lineText).width),
             });
             lineText = (tempText[i] || '');
-            lineNum ++;
+            lineNum++;
           }
           if ((lineNum + 1) * fontHeight > elem.h) {
             break;
@@ -80,8 +80,8 @@ export function drawText(
                 width: ctx.calcScreenNum(ctx.measureText(lineText).width),
               });
               // 不是最后一段...这里 lineNum 也要加一...解决存在换行场景时超出换行的异常
-              if(idx < descTextList.length - 1){
-                lineNum ++;
+              if (idx < descTextList.length - 1) {
+                lineNum++;
               }
               break;
             }
@@ -89,7 +89,7 @@ export function drawText(
         }
       });
     }
-    
+
 
     // draw text lines
     {
@@ -163,5 +163,5 @@ export function drawText(
 //   `;
 //   return svg;
 // }
- 
+
 
